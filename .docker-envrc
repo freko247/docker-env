@@ -1,6 +1,6 @@
 # Functions
 
-## Development
+## Build
 docker-env-build() {
     workdir=$PWD
     cd $HOME/.docker-env
