@@ -28,10 +28,11 @@ else
     echo "Setting up docker-env"
     mkdir $HOME/.docker-env
 fi
-# wget -O $HOME/.docker-env/.docker-envrc https://github.com/freko/docker-env/.docker-envrc
-# wget -O $HOME/.docker-env/.docker-env-python-requirements.txt https://github.com/freko/docker-env/docker-env-python-requirements.txt
-cp -r $HOME/projects/docker-env/ $HOME/.docker-env
 
+## Download the repository and unzip into .docker-env
+curl --output $HOME/.docker-env/docker-env.zip -k -L https://github.com/freko247/docker-env/archive/master.zip
+
+unzip -j $HOME/.docker-env/docker-env.zip -d $HOME/.docker-env
 
 ## Add source to shell profile
 shell_profile=".zshrc"
