@@ -1,0 +1,16 @@
+# Functions
+
+## Development
+docker-env-build() {
+    workdir=$PWD
+    cd $HOME/.docker-env
+    docker build -t docker-env .
+    cd $workdir
+}
+
+## Main
+docker-env() { docker run -v $(pwd):/code docker-env $*; }
+
+## Python
+black() { docker run -v $(pwd):/code docker-env black $*; }
+
