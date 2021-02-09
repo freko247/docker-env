@@ -9,12 +9,23 @@ curl --output docker-env-setup.sh -k -L https://raw.githubusercontent.com/freko2
 ```
 
 ## BUILD
+
 ```bash
-docker-env-build
+docker-env-build <environment_name>
 ```
 
-## USE
+You need to have a `requirements.txt` file in your current working directory. This file will be used when installing Python dependencies.
 
-```docker-env python --version``` will get the python version on the container
+### Overrides
 
-```black``` will run the Python code formatter from the container on the current working directory.
+This is a key feature with docker-env. A list of commands can be specified in a file named `.docker-env-overrides` any command in this list will be overridden and used from inside the container.
+
+The structure of the file should be one command per line, no arguments are allowed.
+
+## SET ENVIRONMENT
+
+```bash
+docker-env-set <environment_name>
+```
+
+This sets/activates the specified environment ~~and activates the override of the commands set in the `.docker-env-overrides` file~~. (overrides currently not automatically activated, run `source $HOME/.docker-env/env/%DOCKER_ENV/overrides` manually after running the command above)

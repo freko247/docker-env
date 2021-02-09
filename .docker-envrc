@@ -2,15 +2,64 @@
 
 ## Build
 docker-env-build() {
-    workdir=$PWD
-    cd $HOME/.docker-env
-    docker build -t docker-env .
-    cd $workdir
+    env_name=$1
+    if [ -z "$env_name" ];
+    then
+       echo "No env specified, doing nothing."
+    else
+        # create new env folder under .docker-env/env/ with given project name
+        mkdir -p $HOME/.docker-env/env/$env_name
+        if test -f "requirements.txt"; then
+            # copy requirements file to the new folder
+            cp requirements.txt $HOME/.docker-env/env/$env_name
+        else
+          echo "Could not find requirements.txt, doing nothing"
+          return 1
+        fi
+        # Create overrides
+        if test -f ".docker-env-overrides"; then
+            xargs -I{} echo "{}() { docker run -v $(pwd):/code docker-env-$env_name {} $*; }" > $HOME/.docker-env/env/$env_name/overrides <.docker-env-overrides
+        fi
+        # build image
+        ## tag with given project name
+        ## use requirements file in project env folder
+        workdir=$PWD
+        cd $HOME/.docker-env
+        docker build -t docker-env-$env_name . --build-arg ENV_NAME=$env_name
+        cd $workdir
+    fi
+}
+
+## Delete
+docker-env-delete() {
+    if [ -z "$1" ];
+    then
+       echo "No env specified, doing nothing."
+    else
+      rm -rf $HOME/.docker-env/env/$1
+    fi
 }
 
 ## Main
-docker-env() { docker run -v $(pwd):/code docker-env $*; }
+docker-env() {
+    if [ -z "$DOCKER_ENV" ];
+    then
+       echo "No env set, doing nothing. Activate an env with command: docker-env-set" 
+    else
+      docker run -v $(pwd):/code docker-env-$DOCKER_ENV $*
+    fi
+}
 
-## Python
-black() { docker run -v $(pwd):/code docker-env black $*; }
+docker-env-set() {
+    env_name=$1
+    if [ -z "$env_name" ];
+    then
+       echo "No env specified, doing nothing."
+    else
+      export DOCKER_ENV=$env_name
+      # This does not work, we need to source the overrides in the current shell
+      # not in the shell where this script is running...
+      source $HOME/.docker-env/env/$env_name
+    fi
+}
 
