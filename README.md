@@ -8,6 +8,8 @@ Run this command to install docker-env to `~/.docker-env`. Your `.zshrc` will be
 curl --output docker-env-setup.sh -k -L https://raw.githubusercontent.com/freko247/docker-env/master/setup.sh && chmod 755 docker-env-setup.sh && ./docker-env-setup.sh && rm docker-env-setup.sh
 ```
 
+Restart your terminal emulator or reload your profile to make the `docker-env-build` and other command available.
+
 ## BUILD
 
 ```bash
