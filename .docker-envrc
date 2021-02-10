@@ -59,7 +59,7 @@ docker-env-set() {
       export DOCKER_ENV=$env_name
       # This does not work, we need to source the overrides in the current shell
       # not in the shell where this script is running...
-      source $HOME/.docker-env/env/$env_name
+      source $HOME/.docker-env/env/$env_name/overrides
     fi
 }
 
