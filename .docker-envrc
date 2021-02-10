@@ -18,7 +18,7 @@ docker-env-build() {
         fi
         # Create overrides
         if test -f ".docker-env-overrides"; then
-            xargs -I{} echo "{}() { docker run -v $(pwd):/code docker-env-$env_name {} $*; }" > $HOME/.docker-env/env/$env_name/overrides <.docker-env-overrides
+            xargs -I{} echo "{}() { docker run -ti -v $(pwd):/code docker-env-$env_name {} \$*; }" > $HOME/.docker-env/env/$env_name/overrides <.docker-env-overrides
         fi
         # build image
         ## tag with given project name
