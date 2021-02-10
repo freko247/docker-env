@@ -30,4 +30,4 @@ The structure of the file should be one command per line, no arguments are allow
 docker-env-set <environment_name>
 ```
 
-This sets/activates the specified environment ~~and activates the override of the commands set in the `.docker-env-overrides` file~~. (overrides currently not automatically activated, run `source $HOME/.docker-env/env/$DOCKER_ENV/overrides` manually after running the command above)
+This sets/activates the specified environment and activates the override of the commands set in the `.docker-env-overrides` file.
