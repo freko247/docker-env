@@ -10,24 +10,67 @@ curl --output docker-env-setup.sh -k -L https://raw.githubusercontent.com/freko2
 
 Restart your terminal emulator or reload your profile to make the `docker-env-build` and other command available.
 
-## BUILD
+## OVERRIDES
 
+This is a key feature with docker-env. It is possible to override any local command, so that it is run from the container.
+
+As an example it is possible to override the commands `ls`, `vim`, or `python` so that they run on the container instead of on the host.
+
+A list of commands can be specified in a file named `.docker-env-overrides` any command in this list will be overridden and used from inside the container.
+
+The structure of the file should be one command per line, no arguments are allowed.
+
+Apply new overrides running the `docker-env-command`, see more information in the COMMANDS section.
+
+The command `docker-env-add` can be used to add new overrides, see more information in the COMMANDS section 
+
+## COMMANDS
+
+### docker-env-build
+Build a fresh environment or update an existing one
+
+A `requirements.txt` file in your current working directory is required. This file will be used when installing Python dependencies.
+
+Create a new environment using a repository name
+```bash
+docker-env-build
+```
+
+Specify an environment name
 ```bash
 docker-env-build <environment_name>
 ```
 
-You need to have a `requirements.txt` file in your current working directory. This file will be used when installing Python dependencies.
+### docker-env-set
+Set/activate the specified environment and override the commands set in the `.docker-env-overrides` file.
 
-### Overrides
+Automatically use a repository name as environment name
+```bash
+docker-env-set
+```
 
-This is a key feature with docker-env. A list of commands can be specified in a file named `.docker-env-overrides` any command in this list will be overridden and used from inside the container.
-
-The structure of the file should be one command per line, no arguments are allowed.
-
-## SET ENVIRONMENT
-
+Specific environment name
 ```bash
 docker-env-set <environment_name>
 ```
 
-This sets/activates the specified environment and activates the override of the commands set in the `.docker-env-overrides` file.
+### docker-env-delete
+Delete an environment
+
+```bash
+docker-env-delete <environment-name>
+```
+
+### docker-env-add
+Add a requirement to the environment. This will add a new line to `requirements.txt` and rebuild the environment. If a second argument '--override' is given, then an override will also be created automatically.
+
+Only add requirement
+```bash
+docker-env-add django
+```
+
+Add requirement and override the commands
+```bash
+docker-env-add black --override
+```
+
