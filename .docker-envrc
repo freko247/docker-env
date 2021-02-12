@@ -1,18 +1,28 @@
-# Functions
+# docker-env-functions
 
 ## Build
 docker-env-build() {
     env_name=$1
+    # Check if environment name is sent as argument
     if [ -z "$env_name" ];
     then
-       echo "No env specified, doing nothing."
+        # Try to get environment name for repository name
+        echo "No env specified, trying to get from repository name."
+        env_name=`git rev-parse --show-toplevel|xargs basename`
+    fi
+    # Check if environment name was set
+    if [ -z "$env_name" ];
+    then
+        echo "No env specified, doing nothing."
     else
-        # create new env folder under .docker-env/env/ with given project name
+        # Create new environment folder under .docker-env/env/
+        # with given environment name
         mkdir -p $HOME/.docker-env/env/$env_name
         if test -f "requirements.txt"; then
-            # copy requirements file to the new folder
+            # Copy requirements file to the new folder
             cp requirements.txt $HOME/.docker-env/env/$env_name
         else
+          # A requirements.txt file is required when building an environment
           echo "Could not find requirements.txt, doing nothing"
           return 1
         fi
@@ -20,46 +30,120 @@ docker-env-build() {
         if test -f ".docker-env-overrides"; then
             xargs -I{} echo "{}() { docker run -ti -v $(pwd):/code docker-env-$env_name {} \$*; }" > $HOME/.docker-env/env/$env_name/overrides <.docker-env-overrides
         fi
-        # build image
-        ## tag with given project name
-        ## use requirements file in project env folder
+        # Build image with given environment name, the environment name
+        # is also passed as build argument and is used in the Dockerfile
         workdir=$PWD
+        # Navigate to the .docker-env directory before build
         cd $HOME/.docker-env
         docker build -t docker-env-$env_name . --build-arg ENV_NAME=$env_name
+        # Make sure that we return to the working directory
         cd $workdir
+        # Set the environment
+        export DOCKER_ENV=env_name
+        # TODO: Source the overrides
     fi
 }
 
 ## Delete
 docker-env-delete() {
+    # Delete the specified environment
     if [ -z "$1" ];
     then
-       echo "No env specified, doing nothing."
+        echo "No env specified, doing nothing."
     else
-      rm -rf $HOME/.docker-env/env/$1
+        rm -rf $HOME/.docker-env/env/$1
     fi
 }
 
 ## Main
 docker-env() {
+    # Run any command with arguments on available on the environment container
+    # (not only overriden commands)
+    # Examples:
+    # docker-env ls -lah
+    # docker-env python
     if [ -z "$DOCKER_ENV" ];
     then
-       echo "No env set, doing nothing. Activate an env with command: docker-env-set" 
+        echo "No env set, doing nothing. Activate an env with command: docker-env-set" 
     else
-      docker run -v $(pwd):/code docker-env-$DOCKER_ENV $*
+        docker run -ti -v $(pwd):/code docker-env-$DOCKER_ENV $*
     fi
 }
 
 docker-env-set() {
+    # Set the docker environment to use
     env_name=$1
+    # Check if environment name is given as argument
     if [ -z "$env_name" ];
     then
-       echo "No env specified, doing nothing."
+        # Check if possible to get environment name from repository name
+        echo "No env specified, trying to get from repository name."
+        repo_name=`git rev-parse --show-toplevel|xargs basename`
+        if [ -n "$repo_name" ];
+        then
+            # Set environment
+            export DOCKER_ENV=$repo_name
+            # Source the command overrides
+            source $HOME/.docker-env/env/$repo_name/overrides
+            echo "Environment set to: $DOCKER_ENV"
+        else
+            # Could not set environment from argument or repository name
+            echo "Could not set environment from repository name, doing nothing."
+        fi
     else
-      export DOCKER_ENV=$env_name
-      # This does not work, we need to source the overrides in the current shell
-      # not in the shell where this script is running...
-      source $HOME/.docker-env/env/$env_name/overrides
+        # Set environment
+        export DOCKER_ENV=$env_name
+        # Source the command overrides
+        source $HOME/.docker-env/env/$env_name/overrides
+        echo "Environment set to: $DOCKER_ENV"
     fi
 }
 
+docker-env-add() {
+    requirement=$1
+    # Only try to add if requirement is provided as argument
+    if [ -n "$requirement" ];
+    then
+        # Check if requirement already is defined
+        grep -q $requirement requirements.txt
+        new_requirement="$?"
+        echo $new_requirement
+        if [ $new_requirement = "1" ];
+        then
+            # Add new requirement to requirements.txt
+            echo $requirement >> requirements.txt
+        else
+            echo "Requirement already defined."
+        fi
+        # Add override if second argument is provided
+        # TODO: use option instead of dumb argument
+        if [ -n "$2" ];
+        then
+            # Check if override is already defined
+            grep -q $requirement requirements.txt
+            new_override="$?"
+            if [ $new_override = 1];
+            then
+                # Add override
+                echo $requirement >> .docker-env-overrides
+            else
+                echo "Override already defined."
+            fi
+        fi
+        # Automatically build environment
+        if [ -n "$DOCKER_ENV" ];
+        then
+            docker-env-build $DOCKER_ENV
+        else
+            echo "Can't build as no environment is active"
+        fi
+    else
+        echo "No requirement provided, doing nothing."
+    fi
+}
+
+# HELPER FUNCTIONS
+
+# TODO: Write helper function that sources overrides
+# source_overrides()
+    # Source overrides if environment is set and overrides exist
