@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "semantic-release": "^17.4.4"
+  },
+  "name": "docker-env",
+  "description": "Manage your development environment(s) in a docker container",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freko247/docker-env.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/freko247/docker-env/issues"
+  },
+  "homepage": "https://github.com/freko247/docker-env#readme"
+}
